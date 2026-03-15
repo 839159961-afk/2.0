@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Noto Serif SC", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+body {
+  font-family: var(--font-serif);
+  background-color: #f5f5f0; /* Warm off-white */
+  color: #2c2c2c;
+}
+
+.writing-vertical {
+  writing-mode: vertical-rl;
+}
