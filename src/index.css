@@ -2,15 +2,30 @@
 
 @theme {
   --font-sans: "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
-  --font-serif: "Noto Serif SC", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-serif: "Kaiti", "STKaiti", "Noto Serif SC", ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 body {
   font-family: var(--font-serif);
-  background-color: #f5f5f0; /* Warm off-white */
-  color: #2c2c2c;
+  background-color: #2c2e2f; /* Dark background outside the game container */
+  color: #2c2e2f;
 }
 
 .writing-vertical {
   writing-mode: vertical-rl;
+}
+
+/* Custom Scrollbar for the ink wash theme */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #d3cbb8;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #b84b4b;
 }

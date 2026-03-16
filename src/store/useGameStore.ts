@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { ITEMS, BEASTS, ENCOUNTERS, DIARIES } from '../data/gameData';
+import { ITEMS, BEASTS, ENCOUNTERS } from '../data/gameData';
+import { PREDEFINED_DIARIES } from '../data/diaries';
 import { auth, db, loginWithGoogle, logout } from '../firebase';
 import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
 import { onAuthStateChanged, User } from 'firebase/auth';
@@ -74,6 +75,7 @@ export interface GameState {
   activeEncounter: string | null;
   encounterHistory: string[];
   unlockedDiaries: string[];
+  unlockedDiaryCount: number;
   newDiary: string | null;
 }
 
@@ -91,7 +93,8 @@ const loadState = (): GameState => {
     acknowledgedMilestones: [],
     activeEncounter: null,
     encounterHistory: [],
-    unlockedDiaries: ['d1', 'd2', 'd3', 'd4', 'd5'],
+    unlockedDiaries: [],
+    unlockedDiaryCount: 0,
     newDiary: null,
   };
 
@@ -105,7 +108,8 @@ const loadState = (): GameState => {
         acknowledgedMilestones: parsed.acknowledgedMilestones || [],
         activeEncounter: parsed.activeEncounter || null,
         encounterHistory: parsed.encounterHistory || [],
-        unlockedDiaries: Array.from(new Set([...(parsed.unlockedDiaries || []), 'd1', 'd2', 'd3', 'd4', 'd5'])),
+        unlockedDiaries: parsed.unlockedDiaries || [],
+        unlockedDiaryCount: parsed.unlockedDiaryCount || 0,
         newDiary: parsed.newDiary || null,
       };
     } catch (e) {
@@ -137,8 +141,8 @@ export const useGameStore = () => {
             setState(prev => ({
               ...prev,
               ...data,
-              // Merge unlocked diaries to ensure default ones are present
-              unlockedDiaries: Array.from(new Set([...(data.unlockedDiaries || []), 'd1', 'd2', 'd3', 'd4', 'd5']))
+              unlockedDiaries: data.unlockedDiaries || [],
+              unlockedDiaryCount: data.unlockedDiaryCount || 0
             }));
           } else {
             // First time login, save current local state to Firestore
@@ -208,7 +212,6 @@ export const useGameStore = () => {
           next.travelEndTime = null;
           
           const unencountered = ENCOUNTERS.filter(e => !next.encounterHistory.includes(e.id));
-          const lockedDiaries = DIARIES.filter(d => !next.unlockedDiaries.includes(d.id));
           
           const rand = Math.random();
           
@@ -217,15 +220,25 @@ export const useGameStore = () => {
             const randomEncounter = unencountered[Math.floor(Math.random() * unencountered.length)];
             next.activeEncounter = randomEncounter.id;
             next.logs = [`药童回来了！似乎在路上遇到了一位神秘人物...`, ...next.logs].slice(0, 10);
-          } else if (rand < 0.575 && lockedDiaries.length > 0) {
-            // 42.5% chance for a diary entry
-            // Always unlock diaries in order
-            const nextDiary = lockedDiaries.sort((a, b) => parseInt(a.id.slice(1)) - parseInt(b.id.slice(1)))[0];
-            next.unlockedDiaries = [...next.unlockedDiaries, nextDiary.id];
-            next.newDiary = nextDiary.id;
-            next.logs = [`药童回来了！在灯下写下了一篇新的日记。`, ...next.logs].slice(0, 10);
+          } else if (rand < 0.575 && next.unlockedDiaryCount < PREDEFINED_DIARIES.length) {
+            // 42.5% chance for a diary entry (if not all unlocked)
+            const nextDiaryIndex = next.unlockedDiaryCount;
+            const predefined = PREDEFINED_DIARIES[nextDiaryIndex];
+            
+            // We use the index as the ID to keep it simple, prefixed with 'pd_'
+            const newDiaryId = `pd_${nextDiaryIndex}`;
+            
+            // We need to add this to a global or just store it in unlockedDiaries 
+            // Wait, the UI expects the full diary object in DIARIES array if we just store ID.
+            // Let's store the full diary object in a new state array or modify the UI to read from PREDEFINED_DIARIES.
+            // For now, let's just store the ID and we will update DiaryList to read from PREDEFINED_DIARIES.
+            
+            next.unlockedDiaries = [...next.unlockedDiaries, newDiaryId];
+            next.unlockedDiaryCount += 1;
+            next.newDiary = newDiaryId;
+            next.logs = [`药童回来了！写下了一篇新日记：《${predefined.title}》`, ...next.logs].slice(0, 10);
           } else {
-            // 42.5% chance for a beast souvenir
+            // 42.5% chance for a beast souvenir (or fallback if all diaries unlocked)
             const randomBeast = BEASTS[Math.floor(Math.random() * BEASTS.length)];
             if (!next.collection.includes(randomBeast.id)) {
               next.collection = [...next.collection, randomBeast.id];

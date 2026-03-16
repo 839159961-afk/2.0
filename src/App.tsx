@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useGameStore } from './store/useGameStore';
 import { Leaf, Store, Backpack, BookOpen, Home, ScrollText, LogIn, LogOut } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import Courtyard from './components/Courtyard';
 import Shop from './components/Shop';
 import Bag from './components/Bag';
@@ -68,8 +69,8 @@ export default function App() {
         </div>
 
         {/* Header */}
-        <header className="pt-10 pb-4 px-6 flex justify-between items-end z-10 shrink-0 relative">
-          <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#e5dfd1] to-transparent -z-10"></div>
+        <header className="pt-10 pb-4 px-6 flex justify-between items-end z-10 shrink-0 relative border-b border-[#d3cbb8]/50">
+          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-[#e5dfd1] to-transparent -z-10"></div>
           <div className="flex flex-col">
             <h1 className="text-xl sm:text-2xl font-bold tracking-[0.1em] text-[#2c2e2f] drop-shadow-sm flex items-center gap-2" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
               游此山海
@@ -99,16 +100,27 @@ export default function App() {
         </header>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-hidden relative z-0">
-          {currentTab === 'home' && <Courtyard state={state} onHarvest={harvestHerbs} />}
-          {currentTab === 'shop' && <Shop herbs={state.herbs} inventory={state.inventory} onBuy={buyItem} />}
-          {currentTab === 'bag' && <Bag state={state} onPack={packItem} onUnpack={unpackItem} />}
-          {currentTab === 'collection' && <Collection collection={state.collection} />}
-          {currentTab === 'diary' && <DiaryList unlockedDiaries={state.unlockedDiaries} />}
+        <main className="flex-1 overflow-hidden relative z-0 pb-20">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="h-full w-full"
+            >
+              {currentTab === 'home' && <Courtyard state={state} onHarvest={harvestHerbs} />}
+              {currentTab === 'shop' && <Shop herbs={state.herbs} inventory={state.inventory} onBuy={buyItem} />}
+              {currentTab === 'bag' && <Bag state={state} onPack={packItem} onUnpack={unpackItem} />}
+              {currentTab === 'collection' && <Collection collection={state.collection} />}
+              {currentTab === 'diary' && <DiaryList unlockedDiaries={state.unlockedDiaries} />}
+            </motion.div>
+          </AnimatePresence>
         </main>
 
         {/* Bottom Navigation */}
-        <nav className="bg-[#e5dfd1]/90 backdrop-blur-md border-t border-[#d3cbb8] flex justify-around p-2 pb-safe z-20 shrink-0 absolute bottom-0 w-full shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+        <nav className="bg-[#f0ece1]/95 backdrop-blur-md border-t border-[#d3cbb8]/80 flex justify-around p-2 pb-safe z-20 shrink-0 absolute bottom-0 w-full shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
           <NavButton active={currentTab === 'home'} onClick={() => setCurrentTab('home')} icon={<Home className="w-5 h-5" />} label="庭院" />
           <NavButton active={currentTab === 'shop'} onClick={() => setCurrentTab('shop')} icon={<Store className="w-5 h-5" />} label="集市" />
           <NavButton active={currentTab === 'bag'} onClick={() => setCurrentTab('bag')} icon={<Backpack className="w-5 h-5" />} label="行囊" />
@@ -144,10 +156,16 @@ function NavButton({ active, onClick, icon, label }: { active: boolean, onClick:
   return (
     <button 
       onClick={onClick}
-      className={`flex flex-col items-center p-2 rounded transition-all w-16 relative ${active ? 'text-[#b84b4b]' : 'text-[#6b7072] hover:text-[#2c2e2f]'}`}
+      className={`flex flex-col items-center justify-center p-2 rounded-sm transition-all w-16 relative group ${active ? 'text-[#b84b4b]' : 'text-[#6b7072] hover:text-[#2c2e2f]'}`}
     >
-      {active && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-[#b84b4b] rounded-full"></span>}
-      <div className={`mb-1 transition-transform duration-300 ${active ? '-translate-y-1' : ''}`}>{icon}</div>
+      {active && (
+        <motion.div 
+          layoutId="nav-indicator"
+          className="absolute inset-0 bg-[#b84b4b]/10 border border-[#b84b4b]/30 rounded-sm -z-10"
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        />
+      )}
+      <div className={`mb-1 transition-transform duration-300 ${active ? '-translate-y-0.5' : 'group-hover:-translate-y-0.5'}`}>{icon}</div>
       <span className="text-[11px] font-bold tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>{label}</span>
     </button>
   );

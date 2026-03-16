@@ -1,9 +1,24 @@
 import { useState } from 'react';
 import { BEASTS, Beast, Rarity } from '../data/gameData';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Cloud, CloudRain, Sun, Snowflake } from 'lucide-react';
 import LandscapeBackground from './LandscapeBackground';
 import BeastGraphic from './BeastGraphic';
+
+const container = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05
+    }
+  }
+};
+
+const itemAnim = {
+  hidden: { opacity: 0, scale: 0.8 },
+  show: { opacity: 1, scale: 1 }
+};
 
 const WeatherIcon = ({ weather, className = "" }: { weather: Beast['weather'], className?: string }) => {
   switch(weather) {
@@ -50,29 +65,32 @@ export default function Collection({ collection }: { collection: string[] }) {
   return (
     <div className="p-6 h-full flex flex-col pb-28 bg-[#f0ece1]">
       <div className="flex justify-between items-end mb-8">
-        <h2 className="text-2xl font-bold flex items-center gap-3 text-[#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
-          <span className="w-1 h-6 bg-[#2c2e2f] inline-block"></span>
+        <h2 className="text-2xl font-bold flex items-center gap-3 text-[#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif', textShadow: '2px 2px 0px #d3cbb8' }}>
+          <span className="w-1 h-6 bg-[#2c2e2f] inline-block shadow-[2px_2px_0_0_#d3cbb8]"></span>
           山海图鉴
         </h2>
-        <span className="text-[11px] font-mono font-bold text-[#6b7072] border border-[#d3cbb8] px-2 py-1 rounded-sm bg-[#e5dfd1]">
+        <span className="text-[11px] font-mono font-bold text-[#6b7072] border-2 border-[#d3cbb8] px-2 py-1 rounded-sm bg-[#e5dfd1] shadow-[2px_2px_0_0_#d3cbb8]">
           收集度: {collectedCount}/{totalCount}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 overflow-y-auto">
-        {BEASTS.map((beast, index) => {
+      <motion.div 
+        variants={container}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-2 gap-4 overflow-y-auto"
+      >
+        {BEASTS.map(beast => {
           const isUnlocked = collection.includes(beast.id);
           
           return (
             <motion.div 
+              variants={itemAnim}
               key={beast.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05, duration: 0.5 }}
               onClick={() => isUnlocked && setSelectedBeast(beast)}
-              whileHover={isUnlocked ? { scale: 1.03, y: -4, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)" } : {}}
-              whileTap={isUnlocked ? { scale: 0.98 } : {}}
-              className={`aspect-[3/4] rounded-sm relative overflow-hidden transition-all border-2 ${isUnlocked ? `cursor-pointer shadow-sm ${getRarityBorder(beast.rarity)}` : 'opacity-40 grayscale cursor-not-allowed border-dashed border-[#d3cbb8] bg-[#e5dfd1]'}`}
+              whileHover={isUnlocked ? { scale: 1.05, y: -2 } : {}}
+              whileTap={isUnlocked ? { scale: 0.95 } : {}}
+              className={`aspect-[3/4] rounded-sm relative overflow-hidden transition-all border-2 ${isUnlocked ? `cursor-pointer shadow-[4px_4px_0_0_#d3cbb8] hover:shadow-[4px_4px_0_0_#2c2e2f] ${getRarityBorder(beast.rarity)}` : 'opacity-40 grayscale cursor-not-allowed border-dashed border-[#d3cbb8] bg-[#e5dfd1]'}`}
             >
               {isUnlocked ? (
                 <>
@@ -82,26 +100,22 @@ export default function Collection({ collection }: { collection: string[] }) {
                   {/* Paper texture overlay */}
                   <div className="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')]"></div>
                   
-                  {/* Beast Graphic with breathing animation */}
-                  <motion.div 
-                    animate={{ y: [0, -3, 0] }}
-                    transition={{ repeat: Infinity, duration: 4 + Math.random() * 2, ease: "easeInOut" }}
-                    className="absolute inset-0 flex items-center justify-center"
-                  >
-                    <BeastGraphic seed={beast.shapeSeed} className="w-3/4 h-3/4 drop-shadow-md" />
-                  </motion.div>
+                  {/* Beast Graphic */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <BeastGraphic seed={beast.shapeSeed} className="w-3/4 h-3/4" />
+                  </div>
 
                   {/* Weather Badge */}
-                  <div className="absolute top-2 right-2 bg-[#f0ece1]/80 backdrop-blur-sm px-1.5 py-1 rounded-sm border border-[#d3cbb8] flex flex-col items-center gap-1 shadow-sm">
+                  <div className="absolute top-2 right-2 bg-[#f0ece1]/80 backdrop-blur-sm px-1.5 py-1 rounded-sm border-2 border-[#d3cbb8] flex flex-col items-center gap-1 shadow-[2px_2px_0_0_#2c2e2f]">
                     <WeatherIcon weather={beast.weather} className="w-3 h-3 text-[#2c2e2f]" />
-                    <span className="text-[8px] font-bold text-[#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
+                    <span className="text-[8px] font-bold text-[#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
                       <WeatherLabel weather={beast.weather} />
                     </span>
                   </div>
 
                   {/* Rarity Badge */}
-                  <div className="absolute top-2 left-2 bg-[#f0ece1]/90 backdrop-blur-sm px-1.5 py-0.5 rounded-sm border border-[#d3cbb8] shadow-sm">
-                    <span className="text-[10px] font-bold" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
+                  <div className="absolute top-2 left-2 bg-[#f0ece1]/90 backdrop-blur-sm px-1.5 py-0.5 rounded-sm border-2 border-[#d3cbb8] shadow-[2px_2px_0_0_#2c2e2f]">
+                    <span className="text-[10px] font-bold" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
                       <RarityLabel rarity={beast.rarity} />
                     </span>
                   </div>
@@ -110,7 +124,7 @@ export default function Collection({ collection }: { collection: string[] }) {
                     <h3 className="font-bold text-2xl tracking-[0.4em] drop-shadow-md text-white" style={{ writingMode: 'vertical-rl', fontFamily: '"Kaiti", "STKaiti", serif', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{beast.name}</h3>
                   </div>
                   <div className="absolute bottom-3 left-3 right-3 text-center pointer-events-none">
-                    <span className="text-[10px] font-bold bg-[#2c2e2f]/70 text-[#f0ece1] px-2 py-0.5 rounded-sm backdrop-blur-sm border border-[#f0ece1]/30 tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
+                    <span className="text-[10px] font-bold bg-[#2c2e2f]/70 text-[#f0ece1] px-2 py-0.5 rounded-sm backdrop-blur-sm border-2 border-[#f0ece1]/30 tracking-widest shadow-[2px_2px_0_0_#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
                       {beast.location}
                     </span>
                   </div>
@@ -123,7 +137,7 @@ export default function Collection({ collection }: { collection: string[] }) {
             </motion.div>
           );
         })}
-      </div>
+      </motion.div>
 
       {/* Detail Modal */}
       <AnimatePresence>
@@ -140,7 +154,7 @@ export default function Collection({ collection }: { collection: string[] }) {
               animate={{ scale: 1, y: 0, opacity: 1 }}
               exit={{ scale: 0.9, y: 20, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className={`bg-[#f0ece1] w-full max-w-sm rounded-sm overflow-hidden shadow-2xl border-2 ${getRarityBorder(selectedBeast.rarity)}`}
+              className={`bg-[#f0ece1] w-full max-w-sm rounded-sm overflow-hidden shadow-[8px_8px_0_0_rgba(0,0,0,0.5)] border-4 ${getRarityBorder(selectedBeast.rarity)}`}
               onClick={e => e.stopPropagation()}
             >
               <div className="h-56 relative flex items-center justify-center overflow-hidden">
@@ -149,40 +163,37 @@ export default function Collection({ collection }: { collection: string[] }) {
                 </div>
                 <div className="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22/%3E%3C/svg%3E')]"></div>
                 
-                {/* Beast Graphic with gentle scaling */}
+                {/* Beast Graphic */}
                 <motion.div 
                   initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: [1, 1.05, 1], opacity: 1 }}
-                  transition={{ 
-                    scale: { repeat: Infinity, duration: 6, ease: "easeInOut" },
-                    opacity: { duration: 0.5 }
-                  }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.1, type: "spring", damping: 20 }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
-                  <BeastGraphic seed={selectedBeast.shapeSeed} className="w-2/3 h-2/3 drop-shadow-xl" />
+                  <BeastGraphic seed={selectedBeast.shapeSeed} className="w-2/3 h-2/3" />
                 </motion.div>
 
                 {/* Weather Badge */}
-                <div className="absolute top-4 left-4 bg-[#f0ece1]/80 backdrop-blur-sm px-2 py-1.5 rounded-sm border border-[#d3cbb8] flex flex-col items-center gap-1 shadow-sm">
+                <div className="absolute top-4 left-4 bg-[#f0ece1]/80 backdrop-blur-sm px-2 py-1.5 rounded-sm border-2 border-[#d3cbb8] flex flex-col items-center gap-1 shadow-[2px_2px_0_0_#2c2e2f]">
                   <WeatherIcon weather={selectedBeast.weather} className="w-4 h-4 text-[#2c2e2f]" />
-                  <span className="text-[10px] font-bold text-[#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
+                  <span className="text-[10px] font-bold text-[#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
                     <WeatherLabel weather={selectedBeast.weather} />
                   </span>
                 </div>
 
-                <button onClick={() => setSelectedBeast(null)} className="absolute top-4 right-4 bg-[#f0ece1]/80 text-[#2c2e2f] rounded-full p-1.5 hover:bg-[#b84b4b] hover:text-white transition-colors backdrop-blur-sm border border-[#d3cbb8]">
+                <button onClick={() => setSelectedBeast(null)} className="absolute top-4 right-4 bg-[#f0ece1]/80 text-[#2c2e2f] rounded-sm p-1.5 hover:bg-[#b84b4b] hover:text-white transition-colors backdrop-blur-sm border-2 border-[#d3cbb8] shadow-[2px_2px_0_0_#2c2e2f]">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               
               <div className="p-8 relative">
-                <div className="absolute -top-8 left-8 bg-[#f0ece1] px-4 py-2 rounded-sm shadow-md text-xl font-bold text-[#2c2e2f] border border-[#d3cbb8] tracking-widest flex items-center gap-2" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
+                <div className="absolute -top-8 left-8 bg-[#f0ece1] px-4 py-2 rounded-sm shadow-[4px_4px_0_0_#d3cbb8] text-xl font-bold text-[#2c2e2f] border-2 border-[#d3cbb8] tracking-widest flex items-center gap-2" style={{ fontFamily: '"Kaiti", "STKaiti", serif', textShadow: '1px 1px 0px #d3cbb8' }}>
                   {selectedBeast.name}
-                  <span className="text-xs border-l border-[#d3cbb8] pl-2">
+                  <span className="text-xs border-l-2 border-[#d3cbb8] pl-2" style={{ imageRendering: 'pixelated' }}>
                     <RarityLabel rarity={selectedBeast.rarity} />
                   </span>
                 </div>
-                <div className="absolute -top-5 right-8 text-[10px] font-bold text-[#f0ece1] drop-shadow-md bg-[#2c2e2f]/80 px-2 py-1 rounded-sm backdrop-blur-sm border border-[#f0ece1]/20 tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
+                <div className="absolute -top-5 right-8 text-[10px] font-bold text-[#f0ece1] drop-shadow-md bg-[#2c2e2f]/80 px-2 py-1 rounded-sm backdrop-blur-sm border-2 border-[#f0ece1]/20 tracking-widest shadow-[2px_2px_0_0_#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
                   {selectedBeast.location}
                 </div>
                 
@@ -191,8 +202,8 @@ export default function Collection({ collection }: { collection: string[] }) {
                     「{selectedBeast.description}」
                   </p>
                   
-                  <div className="bg-[#e5dfd1] p-5 rounded-sm border border-[#d3cbb8] relative">
-                    <div className="absolute -top-3 left-4 bg-[#b84b4b] text-[#f0ece1] text-[10px] px-2 py-0.5 rounded-sm tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>山海经载</div>
+                  <div className="bg-[#e5dfd1] p-5 rounded-sm border-2 border-[#d3cbb8] relative shadow-[inset_2px_2px_0_0_rgba(0,0,0,0.05)]">
+                    <div className="absolute -top-3 left-4 bg-[#b84b4b] text-[#f0ece1] text-[10px] px-2 py-0.5 rounded-sm tracking-widest shadow-[2px_2px_0_0_#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>山海经载</div>
                     <p className="text-xs text-[#4a5540] leading-relaxed mt-1" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
                       {selectedBeast.shanhaijingRecord}
                     </p>

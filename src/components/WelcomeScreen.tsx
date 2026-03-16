@@ -20,7 +20,7 @@ export default function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
     canvas.width = width;
     canvas.height = height;
 
-    const PARTICLE_COUNT = 10000;
+    const PARTICLE_COUNT = 4000; // Reduced for performance and chunkier look
     const particles: Particle[] = [];
 
     class Particle {
@@ -43,14 +43,14 @@ export default function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
         this.vx = 0;
         this.vy = 0;
         const colors = [
-          'rgba(44, 46, 47, 0.8)',   // Dark ink
-          'rgba(26, 28, 24, 0.9)',   // Deepest ink
-          'rgba(74, 85, 64, 0.7)',   // Muted dark green (mountain tint)
-          'rgba(92, 83, 70, 0.6)',   // Sepia/brownish ink
-          'rgba(120, 120, 120, 0.4)' // Light wash
+          '#2c2e2f', // Dark
+          '#4a5540', // Greenish
+          '#b84b4b', // Reddish
+          '#d3cbb8', // Light brown
+          '#e5dfd1'  // Very light
         ];
         this.color = colors[Math.floor(Math.random() * colors.length)];
-        this.size = Math.random() * 2 + 0.5;
+        this.size = Math.random() > 0.8 ? 12 : 6; // Larger, more pixelated sizes
         this.friction = Math.random() * 0.04 + 0.9; // 0.9 to 0.94
         this.ease = Math.random() * 0.02 + 0.01;   // 0.01 to 0.03
       }
@@ -60,10 +60,10 @@ export default function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
         const dxMouse = mouseX - this.x;
         const dyMouse = mouseY - this.y;
         const distMouse = Math.sqrt(dxMouse * dxMouse + dyMouse * dyMouse);
-        if (distMouse < 120) {
-          const force = (120 - distMouse) / 120;
-          this.vx -= (dxMouse / distMouse) * force * 3;
-          this.vy -= (dyMouse / distMouse) * force * 3;
+        if (distMouse < 150) {
+          const force = (150 - distMouse) / 150;
+          this.vx -= (dxMouse / distMouse) * force * 5;
+          this.vy -= (dyMouse / distMouse) * force * 5;
         }
 
         const dx = this.tx - this.x;
@@ -78,7 +78,10 @@ export default function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
 
       draw(ctx: CanvasRenderingContext2D) {
         ctx.fillStyle = this.color;
-        ctx.fillRect(this.x, this.y, this.size, this.size);
+        // Snap to grid for pixel art feel
+        const snapX = Math.round(this.x / 4) * 4;
+        const snapY = Math.round(this.y / 4) * 4;
+        ctx.fillRect(snapX, snapY, this.size, this.size);
       }
     }
 
@@ -168,8 +171,8 @@ export default function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
     window.addEventListener('touchend', handleMouseLeave);
 
     function animate() {
-      // Ink wash background with trails
-      ctx.fillStyle = 'rgba(240, 236, 225, 0.2)'; 
+      // Solid background for pixel art feel
+      ctx.fillStyle = '#f0ece1'; 
       ctx.fillRect(0, 0, width, height);
 
       particles.forEach(p => {
@@ -212,14 +215,14 @@ export default function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
       <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none z-10" />
       
       <div className="z-20 flex flex-col items-center justify-center pointer-events-none">
-        <h1 className="text-5xl sm:text-7xl font-bold tracking-[0.3em] text-[#2c2e2f] mb-16 drop-shadow-sm" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
+        <h1 className="text-5xl sm:text-7xl font-bold tracking-[0.3em] text-[#2c2e2f] mb-16 drop-shadow-sm" style={{ fontFamily: '"Kaiti", "STKaiti", serif', textShadow: '4px 4px 0px #d3cbb8' }}>
           游此山海
         </h1>
         
         <button 
           onClick={onEnter}
-          className="pointer-events-auto px-12 py-4 bg-transparent text-[#b84b4b] rounded-sm transition-all duration-700 tracking-[0.4em] border-2 border-[#b84b4b] hover:bg-[#b84b4b] hover:text-[#f0ece1] hover:scale-105 shadow-sm"
-          style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}
+          className="pointer-events-auto px-12 py-4 bg-[#f0ece1] text-[#b84b4b] transition-all duration-300 tracking-[0.4em] border-4 border-[#b84b4b] shadow-[4px_4px_0_0_#b84b4b] hover:translate-y-1 hover:shadow-[0_0_0_0_#b84b4b]"
+          style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}
         >
           入梦
         </button>

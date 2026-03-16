@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 
 export default function BeastGraphic({ seed, className = "" }: { seed: number, className?: string }) {
   const type = seed % 6;
