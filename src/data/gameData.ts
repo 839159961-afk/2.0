@@ -38,78 +38,6 @@ export interface Beast {
   };
 }
 
-export interface Diary {
-  id: string;
-  title: string;
-  content: string;
-}
-
-const generateDiaries = (): Diary[] => {
-  const diaries: Diary[] = [];
-  const weathers = ['阳光明媚得像刚出炉的桂花糕', '下起了淅淅沥沥的小雨，打在油纸伞上滴答作响', '天空飘着软绵绵的云朵，像极了师傅白白的胡子', '刮起了好大好大的风，差点把我吹跑了'];
-  const locations = ['青丘的狐狸洞旁', '长满发光蘑菇的幽暗森林', '云雾缭绕的昆仑山脚下', '波涛汹涌的东海之滨', '寸草不生的烈焰火山', '常羊山的断崖边', '长满奇花异草的百草园'];
-  const cuteEvents = [
-    '遇到了一只毛茸茸的小兽，它一直蹭我的裤腿，还送了我一颗亮晶晶的石头。我给它喂了半块干粮，它开心地摇着尾巴，一路护送我走出了森林。', 
-    '发现了一片开满七彩花朵的草地，花瓣上还有露珠在闪闪发光。我躺在草地上睡了个午觉，梦见师傅夸我长高了，还给我做了最爱吃的红烧肉。',
-    '在溪边看到一群小鱼在吐泡泡，它们吐出的泡泡竟然是彩色的！我拿竹水筒装了一点溪水，溪水甜甜的，喝下去感觉全身都充满了力气。'
-  ];
-  const scaryEvents = [
-    '呜呜呜，今天太可怕了！一只长着三个脑袋的大鸟突然冲下来，差点把我的药篓叼走。我吓得躲在石头缝里一动不敢动，委屈得直掉眼泪，好想师傅啊...', 
-    '走夜路的时候，四周全是绿幽幽的眼睛。我紧紧抱着寻妖罗盘，一边跑一边哭，鞋子都跑掉了一只。大荒真的太危险了，我再也不敢晚上赶路了！',
-    '今天不小心踩到了一个软绵绵的东西，结果它突然变成了一只巨大的泥潭怪！我拼了命地往树上爬，在树上挂了整整半天它才离开。呜呜，我的衣服全脏了。'
-  ];
-  const encounterEvents = [
-    '今天竟然遇到了黄帝伯伯！他威风凛凛地站在那里，摸了摸我的头，笑着说：“小家伙，和平来之不易，你这记录万物的笔，比我的轩辕剑还要重啊。”我似懂非懂地点了点头，觉得肩膀上的药篓沉甸甸的。',
-    '在海边看到了精卫姐姐。她一次次地把小石头丢进海里。我问她累不累，她说：“精诚所至，金石为开。小药童，你的路也很长，千万不要放弃哦。”我把她的话偷偷记在了心里。',
-    '路过常羊山，看到了没有头的刑天大叔。虽然他看起来很吓人，但他并没有伤害我，反而用肚子发出的声音对我说：“猛志固常在！小娃娃，要有不屈的骨气！”我吓得连连点头，赶紧跑开了。',
-    '今天在山顶见到了浑身发光的帝俊神明！他问我求什么，我说我想认识大荒所有的花草和小动物。他大笑起来：“好一个见识万物！这大荒正需要你这样的记录者。”',
-    '在采药的时候遇到了炎帝爷爷！他好厉害，一眼就认出了我药篓里所有的草药。他教了我好多相生相克的道理，还夸我是个聪明的孩子。我一定要成为像他一样厉害的药师！'
-  ];
-  const outros = [
-    '今天也是努力采药的一天！不知道师傅在家里有没有按时吃饭。', 
-    '把今天的故事写在日记里，等回家了一定要念给师傅听。', 
-    '大荒的世界真奇妙，明天又会有什么新的冒险呢？好期待呀！',
-    '摸了摸行囊里的草药，感觉一切辛苦都是值得的。晚安，大荒。'
-  ];
-
-  for (let i = 1; i < 100; i++) {
-    const w = weathers[i % weathers.length];
-    const l = locations[(i * 3) % locations.length];
-    
-    let eventType = i % 3; 
-    let eventText = '';
-    let title = '';
-    
-    if (eventType === 0) {
-      eventText = cuteEvents[i % cuteEvents.length];
-      title = `软乎乎的第${i}天`;
-    } else if (eventType === 1) {
-      eventText = scaryEvents[i % scaryEvents.length];
-      title = `呜呜呜的第${i}天`;
-    } else {
-      eventText = encounterEvents[i % encounterEvents.length];
-      title = `奇妙相遇的第${i}天`;
-    }
-    
-    const o = outros[(i * 7) % outros.length];
-    
-    const content = `师傅亲启：\n\n今天${w}。我走到了${l}。\n\n${eventText}\n\n大荒真的好大好大，有时候觉得走不到尽头。但是看看行囊里的草药，又觉得充满了力量。${o}`;
-    
-    diaries.push({ id: `d${i}`, title, content });
-  }
-
-  // 100th Diary - The Ending
-  diaries.push({
-    id: 'd100',
-    title: '《归家：大荒游记的终章》',
-    content: '师傅，我回来了！\n\n推开庭院那扇熟悉的木门，闻到院子里飘来的药草香，我的眼泪一下子就掉下来了。这一百天的游历，我走遍了大荒的每一个角落。我见识了帝俊的威严，听过了精卫的鸣叫；我曾被凶猛的异兽追得满山跑，也曾和毛茸茸的小妖精一起分享过桂花糕。\n\n行囊里的草药装了又空，空了又装，图鉴上的空白被一点点填满。黄帝伯伯说我的笔比剑重，精卫姐姐教我不要放弃，刑天大叔让我要有骨气。我把他们的话，还有这山海间的风、雨、云、雪，全都装进了这本厚厚的日记里。\n\n外面的世界虽然广阔神奇，但最让我安心的，还是师傅您煮的那一锅热腾腾的百草汤。小药童的游历结束了，但这本《山海图鉴》，才刚刚开始流传。\n\n师傅，我好想你呀！'
-  });
-
-  return diaries;
-};
-
-export const DIARIES: Diary[] = generateDiaries();
-
 export interface EncounterChoice {
   text: string;
   resultText: string;
@@ -231,6 +159,10 @@ export const ENCOUNTERS: Encounter[] = [
 const generateBeasts = (): Beast[] => {
   const baseBeasts: Omit<Beast, 'id' | 'shapeSeed' | 'shanhaijingRecord'>[] = [
     { name: '九尾狐', location: '青丘之山', description: '其状如狐而九尾，其音如婴儿，能食人，食者不蛊。', rarity: 'epic', weather: 'sunny', colors: { sky: '#fce4d6', mountainFar: '#e6a8d7', mountainMid: '#c77b9d', mountainNear: '#9e4770' } },
+    { name: '狌狌', location: '招摇之山', description: '其状如禺而白耳，伏行人走，其名曰狌狌，食之善走。', rarity: 'rare', weather: 'sunny', colors: { sky: '#fef3c7', mountainFar: '#fcd34d', mountainMid: '#f59e0b', mountainNear: '#b45309' } },
+    { name: '烛龙', location: '钟山', description: '视为昼，瞑为夜，吹为冬，呼为夏，不饮，不食，不息，息为风。', rarity: 'legendary', weather: 'snowy', colors: { sky: '#f3e8ff', mountainFar: '#d8b4fe', mountainMid: '#9333ea', mountainNear: '#581c87' } },
+    { name: '何罗鱼', location: '谯明之山', description: '一首而十身，其音如吠犬，食之已痈。', rarity: 'epic', weather: 'rainy', colors: { sky: '#dbeafe', mountainFar: '#93c5fd', mountainMid: '#3b82f6', mountainNear: '#1e3a8a' } },
+    { name: '飞鱼', location: '劳山', description: '其状如豚而赤文，服之不畏雷，可以御兵。', rarity: 'rare', weather: 'cloudy', colors: { sky: '#e0f2fe', mountainFar: '#7dd3fc', mountainMid: '#38bdf8', mountainNear: '#0284c7' } },
     { name: '帝江', location: '天山', description: '其状如黄囊，赤如丹火，六足四翼，浑敦无面目，是识歌舞。', rarity: 'rare', weather: 'cloudy', colors: { sky: '#fde0c5', mountainFar: '#f4a261', mountainMid: '#e76f51', mountainNear: '#8a3a3a' } },
     { name: '白泽', location: '昆仑山', description: '浑身雪白，能说人话，通万物之情，晓天下万物状貌。', rarity: 'legendary', weather: 'snowy', colors: { sky: '#e2e8f0', mountainFar: '#cbd5e1', mountainMid: '#94a3b8', mountainNear: '#475569' } },
     { name: '精卫', location: '发鸠之山', description: '其状如乌，文首，白喙，赤足，名曰“精卫”，其鸣自詨。', rarity: 'common', weather: 'rainy', colors: { sky: '#dbeafe', mountainFar: '#93c5fd', mountainMid: '#3b82f6', mountainNear: '#1e3a8a' } },
@@ -239,7 +171,6 @@ const generateBeasts = (): Beast[] => {
     { name: '比翼鸟', location: '结匈国', description: '其状如凫，一翼一目，相得乃飞，名曰蛮蛮。', rarity: 'common', weather: 'sunny', colors: { sky: '#cffafe', mountainFar: '#67e8f9', mountainMid: '#06b6d4', mountainNear: '#155e75' } },
     { name: '毕方', location: '章莪之山', description: '其状如鹤，一足，赤文青质而白喙，名曰毕方，其鸣自叫也。', rarity: 'rare', weather: 'sunny', colors: { sky: '#ffedd5', mountainFar: '#fdba74', mountainMid: '#ea580c', mountainNear: '#9a3412' } },
     { name: '夫诸', location: '敖岸之山', description: '其状如白鹿而四角，名曰夫诸，见则其邑大水。', rarity: 'rare', weather: 'rainy', colors: { sky: '#f1f5f9', mountainFar: '#cbd5e1', mountainMid: '#64748b', mountainNear: '#334155' } },
-    { name: '烛阴', location: '钟山', description: '视为昼，瞑为夜，吹为冬，呼为夏，不饮，不食，不息，息为风。', rarity: 'legendary', weather: 'snowy', colors: { sky: '#f3e8ff', mountainFar: '#d8b4fe', mountainMid: '#9333ea', mountainNear: '#581c87' } },
     { name: '乘黄', location: '白民之国', description: '其状如狐，其背上有角，乘之寿二千岁。', rarity: 'epic', weather: 'sunny', colors: { sky: '#fef9c3', mountainFar: '#fde047', mountainMid: '#eab308', mountainNear: '#854d0e' } },
     { name: '陆吾', location: '昆仑之丘', description: '其神状虎身而九尾，人面而虎爪；是神也，司天之九部及帝之囿时。', rarity: 'epic', weather: 'snowy', colors: { sky: '#ffedd5', mountainFar: '#fdba74', mountainMid: '#d97706', mountainNear: '#78350f' } },
   ];

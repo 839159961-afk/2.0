@@ -1,5 +1,60 @@
-import { useState, useEffect, useCallback } from 'react';
-import { ITEMS, BEASTS, ENCOUNTERS, DIARIES } from '../data/gameData';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { ITEMS, BEASTS, ENCOUNTERS } from '../data/gameData';
+import { PREDEFINED_DIARIES } from '../data/diaries';
+import { auth, db, loginWithGoogle, logout } from '../firebase';
+import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged, User } from 'firebase/auth';
+
+enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId: string | undefined;
+    email: string | null | undefined;
+    emailVerified: boolean | undefined;
+    isAnonymous: boolean | undefined;
+    tenantId: string | null | undefined;
+    providerInfo: {
+      providerId: string;
+      displayName: string | null;
+      email: string | null;
+      photoUrl: string | null;
+    }[];
+  }
+}
+
+function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth.currentUser?.uid,
+      email: auth.currentUser?.email,
+      emailVerified: auth.currentUser?.emailVerified,
+      isAnonymous: auth.currentUser?.isAnonymous,
+      tenantId: auth.currentUser?.tenantId,
+      providerInfo: auth.currentUser?.providerData.map(provider => ({
+        providerId: provider.providerId,
+        displayName: provider.displayName,
+        email: provider.email,
+        photoUrl: provider.photoURL
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 export interface Bag {
   food: string | null;
@@ -20,6 +75,7 @@ export interface GameState {
   activeEncounter: string | null;
   encounterHistory: string[];
   unlockedDiaries: string[];
+  unlockedDiaryCount: number;
   newDiary: string | null;
 }
 
@@ -38,6 +94,7 @@ const loadState = (): GameState => {
     activeEncounter: null,
     encounterHistory: [],
     unlockedDiaries: [],
+    unlockedDiaryCount: 0,
     newDiary: null,
   };
 
@@ -52,6 +109,7 @@ const loadState = (): GameState => {
         activeEncounter: parsed.activeEncounter || null,
         encounterHistory: parsed.encounterHistory || [],
         unlockedDiaries: parsed.unlockedDiaries || [],
+        unlockedDiaryCount: parsed.unlockedDiaryCount || 0,
         newDiary: parsed.newDiary || null,
       };
     } catch (e) {
@@ -63,11 +121,64 @@ const loadState = (): GameState => {
 
 export const useGameStore = () => {
   const [state, setState] = useState<GameState>(loadState);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+  const isSyncingRef = useRef(false);
 
-  // Save to local storage whenever state changes
+  // Auth Listener
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      setIsAuthReady(true);
+      
+      if (currentUser) {
+        // Load from Firestore
+        try {
+          const docRef = doc(db, 'users', currentUser.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data() as GameState;
+            setState(prev => ({
+              ...prev,
+              ...data,
+              unlockedDiaries: data.unlockedDiaries || [],
+              unlockedDiaryCount: data.unlockedDiaryCount || 0
+            }));
+          } else {
+            // First time login, save current local state to Firestore
+            await setDoc(docRef, { ...state, uid: currentUser.uid, updatedAt: Date.now() });
+          }
+        } catch (error) {
+          handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Save to local storage and Firestore whenever state changes
   useEffect(() => {
     localStorage.setItem('youshanhai_state', JSON.stringify(state));
-  }, [state]);
+    
+    if (user && isAuthReady && !isSyncingRef.current) {
+      isSyncingRef.current = true;
+      // Debounce Firestore save
+      const timeoutId = setTimeout(async () => {
+        try {
+          const docRef = doc(db, 'users', user.uid);
+          await setDoc(docRef, { ...state, uid: user.uid, updatedAt: Date.now() }, { merge: true });
+        } catch (error) {
+          handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
+        } finally {
+          isSyncingRef.current = false;
+        }
+      }, 2000);
+      return () => {
+        clearTimeout(timeoutId);
+        isSyncingRef.current = false;
+      };
+    }
+  }, [state, user, isAuthReady]);
 
   // Game Loop
   useEffect(() => {
@@ -101,7 +212,6 @@ export const useGameStore = () => {
           next.travelEndTime = null;
           
           const unencountered = ENCOUNTERS.filter(e => !next.encounterHistory.includes(e.id));
-          const lockedDiaries = DIARIES.filter(d => !next.unlockedDiaries.includes(d.id));
           
           const rand = Math.random();
           
@@ -110,15 +220,25 @@ export const useGameStore = () => {
             const randomEncounter = unencountered[Math.floor(Math.random() * unencountered.length)];
             next.activeEncounter = randomEncounter.id;
             next.logs = [`药童回来了！似乎在路上遇到了一位神秘人物...`, ...next.logs].slice(0, 10);
-          } else if (rand < 0.575 && lockedDiaries.length > 0) {
-            // 42.5% chance for a diary entry
-            // Always unlock diaries in order
-            const nextDiary = lockedDiaries.sort((a, b) => parseInt(a.id.slice(1)) - parseInt(b.id.slice(1)))[0];
-            next.unlockedDiaries = [...next.unlockedDiaries, nextDiary.id];
-            next.newDiary = nextDiary.id;
-            next.logs = [`药童回来了！在灯下写下了一篇新的日记。`, ...next.logs].slice(0, 10);
+          } else if (rand < 0.575 && next.unlockedDiaryCount < PREDEFINED_DIARIES.length) {
+            // 42.5% chance for a diary entry (if not all unlocked)
+            const nextDiaryIndex = next.unlockedDiaryCount;
+            const predefined = PREDEFINED_DIARIES[nextDiaryIndex];
+            
+            // We use the index as the ID to keep it simple, prefixed with 'pd_'
+            const newDiaryId = `pd_${nextDiaryIndex}`;
+            
+            // We need to add this to a global or just store it in unlockedDiaries 
+            // Wait, the UI expects the full diary object in DIARIES array if we just store ID.
+            // Let's store the full diary object in a new state array or modify the UI to read from PREDEFINED_DIARIES.
+            // For now, let's just store the ID and we will update DiaryList to read from PREDEFINED_DIARIES.
+            
+            next.unlockedDiaries = [...next.unlockedDiaries, newDiaryId];
+            next.unlockedDiaryCount += 1;
+            next.newDiary = newDiaryId;
+            next.logs = [`药童回来了！写下了一篇新日记：《${predefined.title}》`, ...next.logs].slice(0, 10);
           } else {
-            // 42.5% chance for a beast souvenir
+            // 42.5% chance for a beast souvenir (or fallback if all diaries unlocked)
             const randomBeast = BEASTS[Math.floor(Math.random() * BEASTS.length)];
             if (!next.collection.includes(randomBeast.id)) {
               next.collection = [...next.collection, randomBeast.id];
@@ -258,6 +378,10 @@ export const useGameStore = () => {
 
   return {
     state,
+    user,
+    isAuthReady,
+    loginWithGoogle,
+    logout,
     harvestHerbs,
     buyItem,
     packItem,

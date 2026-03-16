@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { MILESTONE_DIALOGUES } from '../data/gameData';
 
 export default function MilestoneModal({ milestone, onClose }: { milestone: number, onClose: () => void }) {
@@ -13,21 +13,21 @@ export default function MilestoneModal({ milestone, onClose }: { milestone: numb
       <motion.div 
         initial={{ scale: 0.95, y: 10 }}
         animate={{ scale: 1, y: 0 }}
-        className="bg-[#f0ece1] w-full max-w-sm rounded-sm p-8 flex flex-col items-center text-center relative shadow-2xl border border-[#d3cbb8]"
+        className="bg-[#f0ece1] w-full max-w-sm rounded-sm p-8 flex flex-col items-center text-center relative shadow-[8px_8px_0_0_rgba(0,0,0,0.5)] border-4 border-[#d3cbb8]"
       >
-        <div className="w-24 h-24 rounded-full border-2 border-[#b84b4b] overflow-hidden mb-4 bg-[#e5dfd1] flex items-center justify-center">
+        <div className="w-24 h-24 rounded-sm border-4 border-[#b84b4b] overflow-hidden mb-4 bg-[#e5dfd1] flex items-center justify-center shadow-[4px_4px_0_0_#2c2e2f]">
           {/* Medicine boy SVG head/bust */}
-          <svg viewBox="0 0 100 100" className="w-20 h-20">
+          <svg viewBox="0 0 100 100" className="w-20 h-20" style={{ imageRendering: 'pixelated' }}>
             {/* Simplified boy */}
-            <circle cx="50" cy="40" r="25" fill="#fce4d6" />
-            <circle cx="35" cy="15" r="10" fill="#2c2e2f" />
-            <circle cx="65" cy="15" r="10" fill="#2c2e2f" />
-            <path d="M 35 40 Q 50 50 65 40" stroke="#2c2e2f" strokeWidth="2" fill="none" />
-            <path d="M 20 80 Q 50 60 80 80 L 80 100 L 20 100 Z" fill="#7a8b6c" />
+            <rect x="25" y="15" width="50" height="50" fill="#fce4d6" />
+            <rect x="30" y="5" width="10" height="10" fill="#2c2e2f" />
+            <rect x="60" y="5" width="10" height="10" fill="#2c2e2f" />
+            <rect x="35" y="40" width="30" height="5" fill="#2c2e2f" />
+            <rect x="20" y="65" width="60" height="35" fill="#7a8b6c" />
           </svg>
         </div>
-        <h3 className="text-xl font-bold text-[#b84b4b] mb-2" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>药童的信</h3>
-        <div className="text-sm text-[#6b7072] mb-6 font-mono">达成 {milestone} 收集成就</div>
+        <h3 className="text-xl font-bold text-[#b84b4b] mb-2" style={{ fontFamily: '"Kaiti", "STKaiti", serif', textShadow: '1px 1px 0px #d3cbb8' }}>药童的信</h3>
+        <div className="text-sm text-[#6b7072] mb-6 font-mono" style={{ imageRendering: 'pixelated' }}>达成 {milestone} 收集成就</div>
         
         <p className="text-base text-[#2c2e2f] leading-loose mb-8" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
           「{dialogue}」
@@ -35,7 +35,7 @@ export default function MilestoneModal({ milestone, onClose }: { milestone: numb
 
         <button 
           onClick={onClose}
-          className="bg-[#2c2e2f] text-[#f0ece1] px-10 py-2.5 rounded-sm hover:bg-[#b84b4b] active:scale-95 transition-all shadow-md text-sm tracking-widest w-full border border-[#2c2e2f] hover:border-[#b84b4b]"
+          className="bg-[#2c2e2f] text-[#f0ece1] px-10 py-2.5 rounded-sm hover:bg-[#b84b4b] active:scale-95 transition-all shadow-[4px_4px_0_0_#d3cbb8] hover:shadow-[2px_2px_0_0_#d3cbb8] hover:translate-x-[2px] hover:translate-y-[2px] text-sm tracking-widest w-full border-2 border-[#2c2e2f] hover:border-[#b84b4b]"
           style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}
         >
           继续游历
