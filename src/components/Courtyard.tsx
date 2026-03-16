@@ -1,8 +1,7 @@
 import { GameState } from '../store/useGameStore';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Leaf, Image as ImageIcon, X, Check } from 'lucide-react';
+import { motion } from 'motion/react';
+import { Leaf } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
-import { PIXEL_BACKGROUNDS, PixelArtSharedDefs } from './PixelBackgrounds';
 
 export default function Courtyard({ state, onHarvest }: { state: GameState, onHarvest: () => void }) {
   const herbPositions = useMemo(() => Array.from({ length: 20 }).map((_, i) => ({
@@ -12,13 +11,6 @@ export default function Courtyard({ state, onHarvest }: { state: GameState, onHa
   })), []);
 
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
-  
-  // Custom background state
-  const [bgId, setBgId] = useState<string>('spring');
-  const [showBgSelector, setShowBgSelector] = useState(false);
-
-  const currentBg = PIXEL_BACKGROUNDS.find(b => b.id === bgId) || PIXEL_BACKGROUNDS[0];
-  const BgComponent = currentBg.component;
 
   useEffect(() => {
     if (state.boyState === 'traveling' && state.travelEndTime) {
@@ -34,85 +26,34 @@ export default function Courtyard({ state, onHarvest }: { state: GameState, onHa
 
   return (
     <div className="h-full flex flex-col relative bg-[#f0ece1]">
-      <PixelArtSharedDefs />
       
-      {/* Background Landscape */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={bgId}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 1 }}
-            className="absolute inset-0"
-          >
-            <BgComponent />
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      {/* Background Landscape (Ink Wash Mountains) */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-80">
+        {/* Sun/Moon */}
+        <div className="absolute top-12 right-16 w-12 h-12 rounded-full bg-[#b84b4b] opacity-80 mix-blend-multiply blur-[1px]"></div>
+        
+        {/* Distant Mountains */}
+        <svg className="absolute top-20 w-full h-64 opacity-30" viewBox="0 0 400 200" preserveAspectRatio="none">
+          <path d="M0,200 L0,150 Q50,100 100,130 T200,80 T300,120 T400,90 L400,200 Z" fill="#6b7072" />
+          <path d="M0,200 L0,180 Q80,120 150,160 T280,110 T400,150 L400,200 Z" fill="#4a5540" opacity="0.5" />
+        </svg>
 
-      {/* Settings Button for Background */}
-      <div className="absolute top-4 right-4 z-40">
-        <button 
-          onClick={() => setShowBgSelector(true)}
-          className="p-2 bg-[#f0ece1]/80 backdrop-blur-sm border border-[#d3cbb8] rounded-sm text-[#6b7072] hover:text-[#2c2e2f] hover:border-[#2c2e2f] transition-colors shadow-sm"
-          title="更换庭院背景"
-        >
-          <ImageIcon className="w-4 h-4" />
-        </button>
-      </div>
+        {/* Midground Mountains */}
+        <svg className="absolute top-40 w-full h-64 opacity-50" viewBox="0 0 400 200" preserveAspectRatio="none">
+          <path d="M-50,200 L-50,120 Q30,60 120,100 T250,40 T450,110 L450,200 Z" fill="#2c2e2f" />
+        </svg>
 
-      {/* Background Selector Modal */}
-      <AnimatePresence>
-        {showBgSelector && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-14 right-4 z-50 bg-[#f0ece1] p-3 rounded-sm border-2 border-[#d3cbb8] shadow-xl w-48 flex flex-col gap-2"
-          >
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-xs font-bold text-[#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>更换庭院背景</span>
-              <button onClick={() => setShowBgSelector(false)} className="text-[#6b7072] hover:text-[#b84b4b]">
-                <X className="w-3 h-3" />
-              </button>
-            </div>
-            
-            <div className="flex flex-col gap-1.5">
-              {PIXEL_BACKGROUNDS.map((bg) => (
-                <button
-                  key={bg.id}
-                  onClick={() => {
-                    setBgId(bg.id);
-                    setShowBgSelector(false);
-                  }}
-                  className={`text-left px-3 py-2 text-[11px] rounded-sm transition-colors border ${
-                    bgId === bg.id 
-                      ? 'bg-[#2c2e2f] text-[#f0ece1] border-[#2c2e2f]' 
-                      : 'bg-[#e5dfd1] text-[#2c2e2f] border-[#d3cbb8] hover:border-[#2c2e2f]'
-                  }`}
-                  style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}
-                >
-                  {bg.name}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        {/* Fog/Clouds */}
+        <div className="absolute top-48 left-0 w-full h-32 bg-gradient-to-b from-transparent via-[#f0ece1]/80 to-[#f0ece1] blur-md"></div>
+      </div>
 
       {/* Interactive Garden Area (Ground) */}
       <div className="absolute bottom-0 w-full h-[45%] cursor-pointer z-10" onClick={onHarvest}>
-        {/* Pixel Ground Texture */}
-        <div className="absolute bottom-0 w-full h-full opacity-80" style={{ backgroundColor: currentBg.groundColor, imageRendering: 'pixelated' }}>
-          {/* Simple pixel pattern for ground */}
-          <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(${currentBg.groundShadow} 2px, transparent 2px)`,
-            backgroundSize: '16px 16px',
-            opacity: 0.3
-          }}></div>
-        </div>
+        {/* Ground Texture */}
+        <svg className="absolute bottom-0 w-full h-full opacity-20" viewBox="0 0 400 200" preserveAspectRatio="none">
+          <path d="M0,100 Q100,80 200,110 T400,90 L400,200 L0,200 Z" fill="#7a8b6c" />
+          <path d="M0,140 Q150,110 250,150 T400,130 L400,200 L0,200 Z" fill="#4a5540" />
+        </svg>
 
         <div className="absolute top-4 left-4 text-[10px] text-[#6b7072] border border-[#d3cbb8] bg-[#f0ece1]/80 px-2 py-1 rounded pointer-events-none tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
           点击庭院采摘草药
@@ -124,15 +65,10 @@ export default function Courtyard({ state, onHarvest }: { state: GameState, onHa
             key={i}
             initial={{ scale: 0, opacity: 0, y: 10 }}
             animate={{ scale: herbPositions[i].scale, opacity: 1, y: 0 }}
-            className="absolute"
+            className="absolute text-[#4a5540]"
             style={{ left: herbPositions[i].left, top: herbPositions[i].top }}
           >
-            {/* Pixel Sprout */}
-            <div className="relative w-6 h-6" style={{ imageRendering: 'pixelated' }}>
-              <div className="absolute bottom-0 left-2 w-2 h-4 bg-[#228B22]"></div>
-              <div className="absolute bottom-2 left-0 w-3 h-2 bg-[#32CD32]"></div>
-              <div className="absolute bottom-3 left-3 w-3 h-2 bg-[#32CD32]"></div>
-            </div>
+            <Leaf className="w-8 h-8 fill-current drop-shadow-sm -rotate-12" />
           </motion.div>
         ))}
       </div>
@@ -145,56 +81,67 @@ export default function Courtyard({ state, onHarvest }: { state: GameState, onHa
             transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
             className="flex flex-col items-center"
           >
-            {/* Pixel Boy */}
-            <div className="relative w-16 h-20" style={{ imageRendering: 'pixelated' }}>
-              {/* Head */}
-              <div className="absolute top-0 left-4 w-8 h-8 bg-[#FFE4C4] border-2 border-[#8B4513]"></div>
-              {/* Hair */}
-              <div className="absolute -top-1 left-3 w-10 h-3 bg-[#000000]"></div>
-              <div className="absolute top-1 left-2 w-2 h-4 bg-[#000000]"></div>
-              <div className="absolute top-1 right-2 w-2 h-4 bg-[#000000]"></div>
-              {/* Eyes */}
-              <div className="absolute top-3 left-5 w-1 h-1 bg-[#000000]"></div>
-              <div className="absolute top-3 right-5 w-1 h-1 bg-[#000000]"></div>
-              {/* Body */}
-              <div className="absolute top-8 left-3 w-10 h-10 bg-[#4682B4] border-2 border-[#000080]"></div>
+            {/* Custom SVG Boy */}
+            <svg viewBox="0 0 100 100" className="w-32 h-32 drop-shadow-xl">
+              {/* Basket */}
+              <path d="M 25 40 L 75 40 L 65 85 L 35 85 Z" fill="#8B5A2B" />
+              <path d="M 25 40 Q 50 35 75 40" fill="none" stroke="#6b4423" strokeWidth="3" />
+              <line x1="35" y1="40" x2="40" y2="85" stroke="#6b4423" strokeWidth="2" />
+              <line x1="65" y1="40" x2="60" y2="85" stroke="#6b4423" strokeWidth="2" />
+              <line x1="28" y1="55" x2="72" y2="55" stroke="#6b4423" strokeWidth="2" />
+              <line x1="32" y1="70" x2="68" y2="70" stroke="#6b4423" strokeWidth="2" />
+              
+              {/* Body/Robe */}
+              <path d="M 35 50 L 65 50 L 75 95 L 25 95 Z" fill="#7a8b6c" />
+              <path d="M 45 50 L 55 50 L 60 95 L 40 95 Z" fill="#5b6b4c" opacity="0.5" />
+              
               {/* Sash */}
-              <div className="absolute top-12 left-2 w-12 h-2 bg-[#FF4500]"></div>
-              {/* Legs */}
-              <div className="absolute bottom-0 left-4 w-3 h-4 bg-[#000000]"></div>
-              <div className="absolute bottom-0 right-4 w-3 h-4 bg-[#000000]"></div>
-            </div>
+              <rect x="30" y="65" width="40" height="6" fill="#b84b4b" />
+              
+              {/* Head */}
+              <circle cx="50" cy="35" r="16" fill="#fce4d6" />
+              
+              {/* Hair Buns */}
+              <circle cx="36" cy="22" r="7" fill="#2c2e2f" />
+              <circle cx="64" cy="22" r="7" fill="#2c2e2f" />
+              
+              {/* Hair Base */}
+              <path d="M 36 28 Q 50 18 64 28 A 16 16 0 0 1 36 28" fill="#2c2e2f" />
+              
+              {/* Face */}
+              <path d="M 44 36 Q 46 34 48 36" fill="none" stroke="#2c2e2f" strokeWidth="1.5" strokeLinecap="round" />
+              <path d="M 52 36 Q 54 34 56 36" fill="none" stroke="#2c2e2f" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="40" cy="40" r="2.5" fill="#ffb6c1" opacity="0.7" />
+              <circle cx="60" cy="40" r="2.5" fill="#ffb6c1" opacity="0.7" />
+              
+              {/* Reading Book */}
+              <path d="M 35 55 L 50 65 L 65 55 L 50 45 Z" fill="#f0ece1" stroke="#2c2e2f" strokeWidth="1" />
+              <line x1="50" y1="45" x2="50" y2="65" stroke="#2c2e2f" strokeWidth="1" />
+            </svg>
             
-            <div className="mt-2 bg-[#f0ece1]/90 backdrop-blur-sm px-4 py-1.5 rounded border-2 border-[#d3cbb8] text-[11px] font-bold text-[#2c2e2f] shadow-[2px_2px_0_0_#d3cbb8] tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
+            <div className="mt-2 bg-[#f0ece1]/90 backdrop-blur-sm px-4 py-1.5 rounded border border-[#d3cbb8] text-[11px] font-bold text-[#2c2e2f] shadow-sm tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
               药童正在研读医书
             </div>
           </motion.div>
         ) : (
           <div className="flex flex-col items-center z-10">
-            {/* Pixel Traveling Silhouette */}
-            <motion.div 
+            {/* Traveling Silhouette */}
+            <motion.svg 
               animate={{ x: [0, 10, 0], y: [0, -2, 0] }}
               transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-              className="relative w-16 h-20 opacity-50" style={{ imageRendering: 'pixelated' }}
+              viewBox="0 0 100 100" className="w-20 h-20 opacity-40 drop-shadow-md"
             >
-              {/* Head */}
-              <div className="absolute top-0 left-4 w-8 h-8 bg-[#000000]"></div>
-              {/* Body */}
-              <div className="absolute top-8 left-3 w-10 h-10 bg-[#000000]"></div>
-              {/* Stick */}
-              <div className="absolute top-4 left-0 w-16 h-1 bg-[#000000] rotate-45 origin-top-left"></div>
-              {/* Bundle */}
-              <div className="absolute top-12 left-10 w-6 h-6 bg-[#000000] rounded-sm"></div>
-              {/* Legs */}
-              <div className="absolute bottom-0 left-4 w-3 h-4 bg-[#000000]"></div>
-              <div className="absolute bottom-0 right-4 w-3 h-4 bg-[#000000]"></div>
-            </motion.div>
+              <path d="M 45 60 L 55 60 L 60 90 L 40 90 Z" fill="#2c2e2f" />
+              <circle cx="50" cy="50" r="8" fill="#2c2e2f" />
+              <path d="M 35 45 L 65 45" stroke="#2c2e2f" strokeWidth="2" strokeLinecap="round" />
+              <path d="M 65 45 L 65 90" stroke="#2c2e2f" strokeWidth="1.5" />
+            </motion.svg>
 
-            <div className="mt-4 bg-[#f0ece1]/80 backdrop-blur-sm px-4 py-1.5 rounded border-2 border-[#d3cbb8] text-[11px] font-bold text-[#6b7072] shadow-[2px_2px_0_0_#d3cbb8] tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
+            <div className="mt-4 bg-[#f0ece1]/80 backdrop-blur-sm px-4 py-1.5 rounded border border-[#d3cbb8] text-[11px] font-bold text-[#6b7072] tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
               药童外出游历中...
             </div>
             {timeLeft !== null && (
-              <div className="text-[10px] mt-2 font-mono bg-[#2c2e2f]/10 px-2 py-1 rounded text-[#4a5540] border border-[#d3cbb8]" style={{ imageRendering: 'pixelated' }}>
+              <div className="text-[10px] mt-2 font-mono bg-[#2c2e2f]/10 px-2 py-1 rounded text-[#4a5540]">
                 预计归来: {timeLeft}s
               </div>
             )}
@@ -204,20 +151,11 @@ export default function Courtyard({ state, onHarvest }: { state: GameState, onHa
 
       {/* Logs Overlay */}
       <div className="absolute bottom-24 left-6 right-6 pointer-events-none z-30">
-        <div className="bg-[#f0ece1]/90 backdrop-blur-md border-2 border-[#d3cbb8] text-[#2c2e2f] text-[11px] p-4 rounded-sm shadow-[0_4px_20px_rgba(0,0,0,0.08)] max-h-32 overflow-hidden flex flex-col-reverse gap-2 relative" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
-          {/* Scroll decorative edges */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#d3cbb8] via-[#e5dfd1] to-[#d3cbb8]"></div>
-          <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-[#d3cbb8] via-[#e5dfd1] to-[#d3cbb8]"></div>
-          
+        <div className="bg-[#f0ece1]/80 backdrop-blur-md border border-[#d3cbb8] text-[#2c2e2f] text-[11px] p-4 rounded shadow-[0_4px_15px_rgba(0,0,0,0.05)] max-h-32 overflow-hidden flex flex-col-reverse gap-2" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
           {state.logs.map((log, i) => (
-            <motion.div 
-              key={i} 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: i === 0 ? 1 : 0.6, x: 0 }}
-              className={`transition-all duration-300 tracking-wide ${i === 0 ? 'font-bold text-[#b84b4b]' : ''}`}
-            >
+            <div key={i} className={`transition-opacity duration-300 tracking-wide ${i === 0 ? 'opacity-100 font-bold text-[#b84b4b]' : 'opacity-60'}`}>
               {log}
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

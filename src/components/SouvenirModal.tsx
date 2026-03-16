@@ -1,5 +1,5 @@
 import { BEASTS, Beast, Rarity } from '../data/gameData';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import LandscapeBackground from './LandscapeBackground';
 import BeastGraphic from './BeastGraphic';
 import { Cloud, CloudRain, Sun, Snowflake } from 'lucide-react';
@@ -54,17 +54,17 @@ export default function SouvenirModal({ beastId, onClose }: { beastId: string, o
         initial={{ scale: 0.95, y: 10 }}
         animate={{ scale: 1, y: 0 }}
         transition={{ type: 'spring', damping: 20 }}
-        className={`bg-[#f0ece1] w-full max-w-sm rounded-sm p-8 flex flex-col items-center text-center relative shadow-[8px_8px_0_0_rgba(0,0,0,0.5)] border-4 ${getRarityBorder(beast.rarity)}`}
+        className={`bg-[#f0ece1] w-full max-w-sm rounded-sm p-8 flex flex-col items-center text-center relative shadow-2xl border-2 ${getRarityBorder(beast.rarity)}`}
       >
-        <div className="absolute -top-5 bg-[#b84b4b] text-[#f0ece1] px-6 py-1.5 rounded-sm shadow-[2px_2px_0_0_#2c2e2f] border-2 border-[#2c2e2f] text-lg tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
+        <div className="absolute -top-5 bg-[#b84b4b] text-[#f0ece1] px-6 py-1.5 rounded-sm shadow-md border border-[#b84b4b] text-lg tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
           药童归来
         </div>
 
-        <div className="mt-6 mb-6 text-[11px] text-[#6b7072] tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
+        <div className="mt-6 mb-6 text-[11px] text-[#6b7072] tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
           带回了一卷新的山海图鉴
         </div>
 
-        <div className="w-48 h-64 rounded-sm shadow-[inset_4px_4px_0_0_rgba(0,0,0,0.2)] flex flex-col items-center justify-center text-[#f0ece1] p-4 relative overflow-hidden mb-8 border-4 border-[#d3cbb8]">
+        <div className="w-48 h-64 rounded-sm shadow-inner flex flex-col items-center justify-center text-[#f0ece1] p-4 relative overflow-hidden mb-8 border border-[#d3cbb8]">
           <div className="absolute inset-0">
             <LandscapeBackground weather={beast.weather} colors={beast.colors} />
           </div>
@@ -76,25 +76,25 @@ export default function SouvenirModal({ beastId, onClose }: { beastId: string, o
           </div>
 
           {/* Weather Badge */}
-          <div className="absolute top-2 right-2 bg-[#f0ece1]/80 backdrop-blur-sm px-1.5 py-1 rounded-sm border-2 border-[#d3cbb8] flex flex-col items-center gap-1 shadow-[2px_2px_0_0_#2c2e2f]">
+          <div className="absolute top-2 right-2 bg-[#f0ece1]/80 backdrop-blur-sm px-1.5 py-1 rounded-sm border border-[#d3cbb8] flex flex-col items-center gap-1 shadow-sm">
             <WeatherIcon weather={beast.weather} className="w-3 h-3 text-[#2c2e2f]" />
-            <span className="text-[8px] font-bold text-[#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
+            <span className="text-[8px] font-bold text-[#2c2e2f]" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
               <WeatherLabel weather={beast.weather} />
             </span>
           </div>
 
           {/* Rarity Badge */}
-          <div className="absolute top-2 left-2 bg-[#f0ece1]/90 backdrop-blur-sm px-1.5 py-0.5 rounded-sm border-2 border-[#d3cbb8] shadow-[2px_2px_0_0_#2c2e2f]">
-            <span className="text-[10px] font-bold" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>
+          <div className="absolute top-2 left-2 bg-[#f0ece1]/90 backdrop-blur-sm px-1.5 py-0.5 rounded-sm border border-[#d3cbb8] shadow-sm">
+            <span className="text-[10px] font-bold" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
               <RarityLabel rarity={beast.rarity} />
             </span>
           </div>
 
-          <h3 className="font-bold text-3xl tracking-[0.5em] relative z-10 drop-shadow-md text-white pointer-events-none" style={{ writingMode: 'vertical-rl', fontFamily: '"Kaiti", "STKaiti", serif', textShadow: '2px 2px 0px rgba(0,0,0,0.5)' }}>{beast.name}</h3>
+          <h3 className="font-bold text-3xl tracking-[0.5em] relative z-10 drop-shadow-md text-white pointer-events-none" style={{ writingMode: 'vertical-rl', fontFamily: '"Kaiti", "STKaiti", serif', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{beast.name}</h3>
         </div>
 
-        <div className="bg-[#e5dfd1] w-full p-5 rounded-sm mb-8 relative border-2 border-[#d3cbb8] shadow-[inset_2px_2px_0_0_rgba(0,0,0,0.05)]">
-          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2c2e2f] text-[#f0ece1] text-[10px] px-3 py-0.5 rounded-sm tracking-widest shadow-[2px_2px_0_0_#d3cbb8]" style={{ fontFamily: '"Kaiti", "STKaiti", serif', imageRendering: 'pixelated' }}>山海经载</div>
+        <div className="bg-[#e5dfd1] w-full p-5 rounded-sm mb-8 relative border border-[#d3cbb8]">
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2c2e2f] text-[#f0ece1] text-[10px] px-3 py-0.5 rounded-sm tracking-widest" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>山海经载</div>
           <p className="text-[11px] text-[#4a5540] leading-relaxed mt-1" style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}>
             「{beast.shanhaijingRecord}」
           </p>
@@ -102,7 +102,7 @@ export default function SouvenirModal({ beastId, onClose }: { beastId: string, o
 
         <button 
           onClick={onClose}
-          className="bg-[#2c2e2f] text-[#f0ece1] px-10 py-2.5 rounded-sm hover:bg-[#b84b4b] active:scale-95 transition-all shadow-[4px_4px_0_0_#d3cbb8] hover:shadow-[2px_2px_0_0_#d3cbb8] hover:translate-x-[2px] hover:translate-y-[2px] text-sm tracking-widest w-full border-2 border-[#2c2e2f] hover:border-[#b84b4b]"
+          className="bg-[#2c2e2f] text-[#f0ece1] px-10 py-2.5 rounded-sm hover:bg-[#b84b4b] active:scale-95 transition-all shadow-md text-sm tracking-widest w-full border border-[#2c2e2f] hover:border-[#b84b4b]"
           style={{ fontFamily: '"Kaiti", "STKaiti", serif' }}
         >
           收下
