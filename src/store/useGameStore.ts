@@ -1,60 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { ITEMS, BEASTS, ENCOUNTERS } from '../data/gameData';
 import { PREDEFINED_DIARIES } from '../data/diaries';
-import { auth, db, loginWithGoogle, logout } from '../firebase';
-import { doc, getDoc, setDoc, onSnapshot } from 'firebase/firestore';
-import { onAuthStateChanged, User } from 'firebase/auth';
-
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId: string | undefined;
-    email: string | null | undefined;
-    emailVerified: boolean | undefined;
-    isAnonymous: boolean | undefined;
-    tenantId: string | null | undefined;
-    providerInfo: {
-      providerId: string;
-      displayName: string | null;
-      email: string | null;
-      photoUrl: string | null;
-    }[];
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData.map(provider => ({
-        providerId: provider.providerId,
-        displayName: provider.displayName,
-        email: provider.email,
-        photoUrl: provider.photoURL
-      })) || []
-    },
-    operationType,
-    path
-  };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
 
 export interface Bag {
   food: string | null;
@@ -121,64 +67,11 @@ const loadState = (): GameState => {
 
 export const useGameStore = () => {
   const [state, setState] = useState<GameState>(loadState);
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthReady, setIsAuthReady] = useState(false);
-  const isSyncingRef = useRef(false);
 
-  // Auth Listener
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      setIsAuthReady(true);
-      
-      if (currentUser) {
-        // Load from Firestore
-        try {
-          const docRef = doc(db, 'users', currentUser.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data() as GameState;
-            setState(prev => ({
-              ...prev,
-              ...data,
-              unlockedDiaries: data.unlockedDiaries || [],
-              unlockedDiaryCount: data.unlockedDiaryCount || 0
-            }));
-          } else {
-            // First time login, save current local state to Firestore
-            await setDoc(docRef, { ...state, uid: currentUser.uid, updatedAt: Date.now() });
-          }
-        } catch (error) {
-          handleFirestoreError(error, OperationType.GET, `users/${currentUser.uid}`);
-        }
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Save to local storage and Firestore whenever state changes
+  // Save to local storage whenever state changes
   useEffect(() => {
     localStorage.setItem('youshanhai_state', JSON.stringify(state));
-    
-    if (user && isAuthReady && !isSyncingRef.current) {
-      isSyncingRef.current = true;
-      // Debounce Firestore save
-      const timeoutId = setTimeout(async () => {
-        try {
-          const docRef = doc(db, 'users', user.uid);
-          await setDoc(docRef, { ...state, uid: user.uid, updatedAt: Date.now() }, { merge: true });
-        } catch (error) {
-          handleFirestoreError(error, OperationType.WRITE, `users/${user.uid}`);
-        } finally {
-          isSyncingRef.current = false;
-        }
-      }, 2000);
-      return () => {
-        clearTimeout(timeoutId);
-        isSyncingRef.current = false;
-      };
-    }
-  }, [state, user, isAuthReady]);
+  }, [state]);
 
   // Game Loop
   useEffect(() => {
@@ -378,10 +271,6 @@ export const useGameStore = () => {
 
   return {
     state,
-    user,
-    isAuthReady,
-    loginWithGoogle,
-    logout,
     harvestHerbs,
     buyItem,
     packItem,

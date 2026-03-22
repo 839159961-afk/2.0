@@ -10,6 +10,7 @@ import DiaryList from './components/DiaryList';
 import SouvenirModal from './components/SouvenirModal';
 import MilestoneModal from './components/MilestoneModal';
 import EncounterModal from './components/EncounterModal';
+import DiaryModal from './components/DiaryModal';
 import WelcomeScreen from './components/WelcomeScreen';
 
 export default function App() {
